@@ -1,0 +1,1351 @@
+/* ==========================================================================
+   AETHERIS 3050 — Design System & HUD Stylesheet (NexusOS)
+   Estándar de Alta Gama (Awwwards / FWA) — 60 FPS GPU-Accelerated
+   ========================================================================== */
+
+/* --------------------------------------------------------------------------
+   1. VARIABLES DE DISEÑO & SISTEMA DE TOKENS
+   -------------------------------------------------------------------------- */
+:root {
+  /* Paleta cromática principal */
+  --bg-abyss: #030712;
+  --bg-deep: #060b17;
+  --bg-glass: rgba(15, 23, 42, 0.68);
+  --bg-glass-elevated: rgba(22, 33, 58, 0.78);
+  
+  --accent-cyan: #00f0ff;
+  --accent-cyan-glow: rgba(0, 240, 255, 0.35);
+  --accent-amber: #ffb703;
+  --accent-amber-glow: rgba(255, 183, 3, 0.32);
+  --accent-violet: #a855f7;
+  --accent-violet-glow: rgba(168, 85, 247, 0.35);
+  --accent-green: #00ff88;
+  --accent-green-glow: rgba(0, 255, 136, 0.38);
+
+  --text-primary: #f8fafc;
+  --text-secondary: #94a3b8;
+  --text-muted: #64748b;
+  --border-subtle: rgba(255, 255, 255, 0.08);
+  --border-glow: rgba(0, 240, 255, 0.28);
+
+  /* Tipografías */
+  --font-display: 'Orbitron', 'Space Grotesk', -apple-system, sans-serif;
+  --font-sans: 'Space Grotesk', -apple-system, sans-serif;
+  --font-mono: 'JetBrains Mono', 'Space Mono', monospace;
+
+  /* Curvas de resorte para feedback táctil responsivo */
+  --ease-spring: cubic-bezier(0.23, 1, 0.32, 1);
+  --ease-drawer: cubic-bezier(0.32, 0.72, 0, 1);
+  --transition-fast: 160ms var(--ease-spring);
+  --transition-smooth: 280ms var(--ease-spring);
+}
+
+/* Modo Escaneo Cuántico (Cyberpunk) */
+body.vision-quantum {
+  --bg-glass: rgba(12, 10, 28, 0.75);
+  --border-glow: rgba(168, 85, 247, 0.45);
+  --text-primary: #fdf4ff;
+}
+
+/* Modo Rayos-X / Wireframe (Fósforo verde militar CRT) */
+body.vision-wireframe {
+  --bg-abyss: #010e06;
+  --bg-deep: #021a0c;
+  --bg-glass: rgba(2, 28, 14, 0.85);
+  --bg-glass-elevated: rgba(3, 40, 20, 0.9);
+  --accent-cyan: #00ff88;
+  --accent-cyan-glow: rgba(0, 255, 136, 0.4);
+  --accent-amber: #00ff88;
+  --accent-violet: #00ff88;
+  --text-primary: #00ff88;
+  --text-secondary: #34d399;
+  --text-muted: #059669;
+  --border-subtle: rgba(0, 255, 136, 0.2);
+  --border-glow: rgba(0, 255, 136, 0.5);
+}
+
+/* --------------------------------------------------------------------------
+   2. REINICIO & BASES GLOBALES
+   -------------------------------------------------------------------------- */
+*, *::before, *::after {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+  user-select: none;
+  -webkit-user-select: none;
+}
+
+html, body {
+  width: 100%;
+  height: 100%;
+  min-height: 100dvh;
+  overflow: hidden;
+  background-color: var(--bg-abyss);
+  color: var(--text-primary);
+  font-family: var(--font-sans);
+  font-size: 14px;
+  line-height: 1.4;
+  text-rendering: optimizeLegibility;
+  -webkit-font-smoothing: antialiased;
+}
+
+/* --------------------------------------------------------------------------
+   3. LIENZOS DE FONDO Y CÁMARA 3D
+   -------------------------------------------------------------------------- */
+.fullscreen-canvas {
+  position: fixed;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  display: block;
+  pointer-events: none;
+}
+
+#cosmos-canvas {
+  z-index: 1;
+}
+
+#chamber-canvas {
+  z-index: 2;
+  pointer-events: auto; /* Permite arrastrar y lanzar objetos */
+  cursor: grab;
+}
+
+#chamber-canvas:active {
+  cursor: grabbing;
+}
+
+/* Overlay de scanlines CRT y aberración cuántica */
+.hud-scanlines-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 3;
+  pointer-events: none;
+  background: linear-gradient(
+    rgba(18, 16, 16, 0) 50%,
+    rgba(0, 0, 0, 0.22) 50%
+  ), linear-gradient(
+    90deg,
+    rgba(255, 0, 0, 0.015),
+    rgba(0, 255, 0, 0.01),
+    rgba(0, 0, 255, 0.015)
+  );
+  background-size: 100% 3px, 6px 100%;
+  opacity: 0.45;
+  transition: opacity 0.3s ease;
+}
+
+body.vision-wireframe .hud-scanlines-overlay {
+  opacity: 0.85;
+  background: repeating-linear-gradient(
+    0deg,
+    rgba(0, 255, 136, 0.04) 0px,
+    rgba(0, 255, 136, 0.04) 1px,
+    transparent 1px,
+    transparent 3px
+  );
+}
+
+/* --------------------------------------------------------------------------
+   4. ESTRUCTURA HUD MAESTRA (NexusOS)
+   -------------------------------------------------------------------------- */
+.nexus-interface {
+  position: relative;
+  z-index: 10;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  width: 100vw;
+  height: 100vh;
+  min-height: 100dvh;
+  pointer-events: none; /* Dejar pasar clics al canvas salvo en elementos interactivos */
+  padding: 16px 24px;
+}
+
+.nexus-interface * {
+  pointer-events: auto;
+}
+
+/* --------------------------------------------------------------------------
+   5. MÓDULO A: HUD & TELEMETRÍA SUPERIOR
+   -------------------------------------------------------------------------- */
+.hud-topbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 20px;
+  background: var(--bg-glass);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border: 1px solid var(--border-subtle);
+  border-radius: 12px;
+  padding: 10px 20px;
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.08), 0 12px 30px rgba(0, 0, 0, 0.45);
+}
+
+/* Identidad de marca y estatus */
+.hud-brand {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+}
+
+.brand-crest {
+  position: relative;
+  width: 26px;
+  height: 26px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.crest-ring {
+  position: absolute;
+  inset: 0;
+  border: 1.5px solid var(--accent-cyan);
+  border-radius: 50%;
+  animation: rotateRing 14s linear infinite;
+  box-shadow: 0 0 10px var(--accent-cyan-glow);
+}
+
+.crest-node {
+  width: 6px;
+  height: 6px;
+  background: #ffffff;
+  border-radius: 50%;
+  box-shadow: 0 0 8px var(--accent-cyan);
+}
+
+@keyframes rotateRing {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}
+
+.brand-title {
+  font-family: var(--font-display);
+  font-size: 15px;
+  font-weight: 800;
+  letter-spacing: 0.12em;
+  color: var(--text-primary);
+}
+
+.brand-title .accent-year {
+  color: var(--accent-cyan);
+  font-weight: 500;
+}
+
+.brand-sub {
+  font-family: var(--font-mono);
+  font-size: 9px;
+  letter-spacing: 0.18em;
+  color: var(--text-muted);
+}
+
+.brand-status {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  background: rgba(0, 240, 255, 0.08);
+  border: 1px solid rgba(0, 240, 255, 0.2);
+  border-radius: 20px;
+  padding: 3px 10px;
+  margin-left: 6px;
+}
+
+.status-pulse {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: var(--accent-cyan);
+  box-shadow: 0 0 8px var(--accent-cyan);
+  animation: pulseBeacon 2s ease-in-out infinite;
+}
+
+@keyframes pulseBeacon {
+  0%, 100% { opacity: 1; transform: scale(1); }
+  50% { opacity: 0.4; transform: scale(0.85); }
+}
+
+.status-label {
+  font-family: var(--font-mono);
+  font-size: 9px;
+  font-weight: 600;
+  letter-spacing: 0.1em;
+  color: var(--accent-cyan);
+}
+
+/* Telemetría central */
+.hud-telemetry-center {
+  display: flex;
+  align-items: center;
+  gap: 18px;
+}
+
+.telemetry-divider {
+  width: 1px;
+  height: 24px;
+  background: var(--border-subtle);
+}
+
+.telemetry-block {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.telemetry-tag {
+  font-family: var(--font-mono);
+  font-size: 8.5px;
+  letter-spacing: 0.15em;
+  color: var(--text-muted);
+}
+
+.telemetry-val {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  color: var(--text-primary);
+}
+
+.highlight-cyan {
+  color: var(--accent-cyan);
+  text-shadow: 0 0 8px var(--accent-cyan-glow);
+}
+
+.integrity-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+}
+
+.integrity-bar-track {
+  width: 110px;
+  height: 3px;
+  background: rgba(255, 255, 255, 0.1);
+  border-radius: 2px;
+  overflow: hidden;
+  margin-top: 2px;
+}
+
+.integrity-bar-fill {
+  height: 100%;
+  background: linear-gradient(90deg, var(--accent-cyan), var(--accent-violet));
+  box-shadow: 0 0 6px var(--accent-cyan);
+  transition: width 0.3s ease;
+}
+
+/* Controles de la derecha (Osciloscopio, Modos de Visión, Audio) */
+.hud-controls-right {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+}
+
+.hud-oscilloscope-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2px;
+  background: rgba(0, 0, 0, 0.35);
+  border: 1px solid var(--border-subtle);
+  border-radius: 6px;
+  padding: 2px 6px;
+}
+
+#hud-oscilloscope {
+  display: block;
+}
+
+.osc-label {
+  font-family: var(--font-mono);
+  font-size: 7.5px;
+  letter-spacing: 0.15em;
+  color: var(--text-muted);
+}
+
+/* Selector de Modos de Visión */
+.vision-mode-selector {
+  display: flex;
+  background: rgba(0, 0, 0, 0.35);
+  border: 1px solid var(--border-subtle);
+  border-radius: 8px;
+  padding: 2px;
+  gap: 2px;
+}
+
+.vision-btn {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  background: transparent;
+  border: none;
+  border-radius: 6px;
+  padding: 5px 10px;
+  font-family: var(--font-mono);
+  font-size: 10px;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  color: var(--text-secondary);
+  cursor: pointer;
+  transition: var(--transition-fast);
+}
+
+.vision-btn .btn-dot {
+  width: 4px;
+  height: 4px;
+  border-radius: 50%;
+  background: currentColor;
+  opacity: 0.4;
+  transition: var(--transition-fast);
+}
+
+.vision-btn:hover {
+  color: var(--text-primary);
+  background: rgba(255, 255, 255, 0.05);
+}
+
+.vision-btn:active {
+  transform: scale(0.97);
+}
+
+.vision-btn.active {
+  color: var(--accent-cyan);
+  background: rgba(0, 240, 255, 0.12);
+  box-shadow: inset 0 0 8px rgba(0, 240, 255, 0.2);
+}
+
+.vision-btn.active .btn-dot {
+  opacity: 1;
+  box-shadow: 0 0 6px var(--accent-cyan);
+}
+
+/* Botón Maestro de Audio */
+.hud-audio-btn {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  background: rgba(0, 240, 255, 0.08);
+  border: 1px solid var(--border-glow);
+  border-radius: 8px;
+  padding: 6px 12px;
+  font-family: var(--font-mono);
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  color: var(--accent-cyan);
+  cursor: pointer;
+  transition: var(--transition-fast);
+}
+
+.hud-audio-btn:hover {
+  background: rgba(0, 240, 255, 0.15);
+  box-shadow: 0 0 12px var(--accent-cyan-glow);
+}
+
+.hud-audio-btn:active {
+  transform: scale(0.97);
+}
+
+.hud-audio-btn.muted {
+  color: var(--text-muted);
+  border-color: var(--border-subtle);
+  background: rgba(255, 255, 255, 0.03);
+}
+
+.audio-waves-icon {
+  display: flex;
+  align-items: center;
+  gap: 2px;
+  height: 12px;
+}
+
+.wave-bar {
+  width: 2px;
+  height: 100%;
+  background: currentColor;
+  border-radius: 1px;
+  animation: soundWaves 0.9s ease-in-out infinite alternate;
+}
+
+.wave-bar.bar-1 { animation-delay: 0.1s; height: 35%; }
+.wave-bar.bar-2 { animation-delay: 0.3s; height: 75%; }
+.wave-bar.bar-3 { animation-delay: 0.5s; height: 100%; }
+.wave-bar.bar-4 { animation-delay: 0.2s; height: 50%; }
+
+.hud-audio-btn.muted .wave-bar {
+  animation: none;
+  height: 25% !important;
+  opacity: 0.5;
+}
+
+@keyframes soundWaves {
+  0% { transform: scaleY(0.3); }
+  100% { transform: scaleY(1); }
+}
+
+/* --------------------------------------------------------------------------
+   6. MÓDULO B: CÁMARA DE GRAVEDAD CERO & RELIQUIAS 3D
+   -------------------------------------------------------------------------- */
+.chamber-viewport {
+  position: relative;
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  align-items: center;
+  pointer-events: none;
+  padding: 14px 0;
+}
+
+/* Selector Superior de Reliquias 3D */
+.relic-selector-nav {
+  pointer-events: auto;
+  display: flex;
+  gap: 8px;
+  background: var(--bg-glass);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border: 1px solid var(--border-subtle);
+  border-radius: 10px;
+  padding: 5px;
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.08), 0 8px 24px rgba(0, 0, 0, 0.4);
+}
+
+.relic-tab {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  background: transparent;
+  border: 1px solid transparent;
+  border-radius: 7px;
+  padding: 6px 14px;
+  color: var(--text-secondary);
+  cursor: pointer;
+  transition: var(--transition-fast);
+  text-align: left;
+}
+
+.relic-num {
+  font-family: var(--font-display);
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--text-muted);
+  transition: var(--transition-fast);
+}
+
+.relic-tab-info {
+  display: flex;
+  flex-direction: column;
+}
+
+.relic-title {
+  font-family: var(--font-display);
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  color: var(--text-primary);
+  transition: var(--transition-fast);
+}
+
+.relic-meta {
+  font-family: var(--font-mono);
+  font-size: 8px;
+  letter-spacing: 0.1em;
+  color: var(--text-muted);
+}
+
+.relic-tab:hover {
+  background: rgba(255, 255, 255, 0.04);
+}
+
+.relic-tab:active {
+  transform: scale(0.97);
+}
+
+.relic-tab.active {
+  background: rgba(0, 240, 255, 0.1);
+  border-color: var(--border-glow);
+  box-shadow: 0 0 14px var(--accent-cyan-glow);
+}
+
+.relic-tab.active .relic-num {
+  color: var(--accent-cyan);
+}
+
+.relic-tab.active .relic-title {
+  color: var(--accent-cyan);
+}
+
+/* Indicador Táctil Central */
+.chamber-interaction-hint {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  background: rgba(0, 0, 0, 0.4);
+  border: 1px solid var(--border-subtle);
+  border-radius: 20px;
+  padding: 5px 14px;
+  pointer-events: none;
+  animation: fadeInOut 4s ease-in-out infinite;
+}
+
+.hint-crosshair {
+  width: 6px;
+  height: 6px;
+  border: 1px solid var(--accent-cyan);
+  border-radius: 50%;
+}
+
+.hint-text {
+  font-family: var(--font-mono);
+  font-size: 9px;
+  letter-spacing: 0.15em;
+  color: var(--text-secondary);
+}
+
+@keyframes fadeInOut {
+  0%, 100% { opacity: 0.45; }
+  50% { opacity: 0.9; }
+}
+
+/* Muelle de Controles Físicos (Dock Inferior de la Cámara) */
+.chamber-controls-dock {
+  pointer-events: auto;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  background: var(--bg-glass);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border: 1px solid var(--border-subtle);
+  border-radius: 12px;
+  padding: 8px 16px;
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.08), 0 12px 30px rgba(0, 0, 0, 0.5);
+}
+
+.control-group {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.group-label {
+  font-family: var(--font-mono);
+  font-size: 9px;
+  letter-spacing: 0.1em;
+  color: var(--text-muted);
+  margin-right: 4px;
+}
+
+.dock-btn {
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid var(--border-subtle);
+  border-radius: 6px;
+  padding: 5px 10px;
+  font-family: var(--font-mono);
+  font-size: 9.5px;
+  font-weight: 600;
+  letter-spacing: 0.06em;
+  color: var(--text-secondary);
+  cursor: pointer;
+  transition: var(--transition-fast);
+}
+
+.dock-btn:hover {
+  background: rgba(255, 255, 255, 0.08);
+  color: var(--text-primary);
+}
+
+.dock-btn:active {
+  transform: scale(0.97);
+}
+
+.dock-btn.active {
+  background: rgba(0, 240, 255, 0.14);
+  border-color: var(--border-glow);
+  color: var(--accent-cyan);
+  box-shadow: 0 0 10px var(--accent-cyan-glow);
+}
+
+.dock-divider {
+  width: 1px;
+  height: 20px;
+  background: var(--border-subtle);
+}
+
+.dock-action-btn {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  background: rgba(0, 240, 255, 0.08);
+  border: 1px solid var(--border-glow);
+  border-radius: 6px;
+  padding: 6px 12px;
+  font-family: var(--font-mono);
+  font-size: 9.5px;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  color: var(--accent-cyan);
+  cursor: pointer;
+  transition: var(--transition-fast);
+}
+
+.dock-action-btn:hover {
+  background: rgba(0, 240, 255, 0.18);
+  box-shadow: 0 0 12px var(--accent-cyan-glow);
+}
+
+.dock-action-btn:active {
+  transform: scale(0.97);
+}
+
+.dock-action-btn.active {
+  background: var(--accent-cyan);
+  color: #030712;
+  box-shadow: 0 0 16px var(--accent-cyan);
+}
+
+.dock-action-btn.secondary {
+  background: rgba(255, 255, 255, 0.04);
+  border-color: var(--border-subtle);
+  color: var(--text-secondary);
+}
+
+.dock-action-btn.secondary:hover {
+  background: rgba(255, 255, 255, 0.09);
+  color: var(--text-primary);
+}
+
+/* --------------------------------------------------------------------------
+   7. MÓDULO D: FICHA HOLOGRÁFICA DE DESCLASIFICACIÓN (Dossier Panel)
+   -------------------------------------------------------------------------- */
+.dossier-panel {
+  position: fixed;
+  right: 24px;
+  top: 80px;
+  bottom: 86px;
+  width: 360px;
+  max-width: calc(100vw - 48px);
+  background: var(--bg-glass-elevated);
+  backdrop-filter: blur(24px);
+  -webkit-backdrop-filter: blur(24px);
+  border: 1px solid var(--border-subtle);
+  border-radius: 16px;
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.12), 0 20px 50px rgba(0, 0, 0, 0.65);
+  display: flex;
+  flex-direction: column;
+  z-index: 40;
+  pointer-events: auto;
+  transform: translateX(110%);
+  transition: transform 380ms var(--ease-drawer);
+}
+
+.dossier-panel.open {
+  transform: translateX(0);
+}
+
+.dossier-close-btn {
+  position: absolute;
+  top: 14px;
+  right: 14px;
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.06);
+  border: 1px solid var(--border-subtle);
+  color: var(--text-secondary);
+  font-size: 18px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: var(--transition-fast);
+}
+
+.dossier-close-btn:hover {
+  background: rgba(255, 255, 255, 0.12);
+  color: var(--text-primary);
+}
+
+.dossier-close-btn:active {
+  transform: scale(0.95);
+}
+
+.dossier-inner {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  padding: 24px 20px;
+  overflow-y: auto;
+  height: 100%;
+}
+
+/* Personalización de scrollbar del dossier */
+.dossier-inner::-webkit-scrollbar {
+  width: 4px;
+}
+
+.dossier-inner::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.dossier-inner::-webkit-scrollbar-thumb {
+  background: rgba(255, 255, 255, 0.15);
+  border-radius: 2px;
+}
+
+.classification-strip {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 6px;
+}
+
+.classification-badge {
+  font-family: var(--font-mono);
+  font-size: 8.5px;
+  font-weight: 700;
+  letter-spacing: 0.15em;
+  background: rgba(239, 68, 68, 0.15);
+  color: #ef4444;
+  border: 1px solid rgba(239, 68, 68, 0.35);
+  border-radius: 4px;
+  padding: 2px 7px;
+}
+
+.archive-code {
+  font-family: var(--font-mono);
+  font-size: 9px;
+  color: var(--text-muted);
+}
+
+.dossier-title {
+  font-family: var(--font-display);
+  font-size: 16px;
+  font-weight: 800;
+  letter-spacing: 0.05em;
+  color: var(--text-primary);
+  line-height: 1.25;
+}
+
+.dossier-era-tag {
+  font-family: var(--font-mono);
+  font-size: 9px;
+  letter-spacing: 0.12em;
+  color: var(--accent-amber);
+  margin-top: 4px;
+}
+
+/* Matriz de Especificaciones */
+.dossier-specs-matrix {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px;
+  background: rgba(0, 0, 0, 0.3);
+  border: 1px solid var(--border-subtle);
+  border-radius: 10px;
+  padding: 10px;
+}
+
+.spec-cell {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.spec-label {
+  font-family: var(--font-mono);
+  font-size: 8px;
+  letter-spacing: 0.12em;
+  color: var(--text-muted);
+}
+
+.spec-value {
+  font-family: var(--font-mono);
+  font-size: 10px;
+  font-weight: 600;
+  color: var(--text-primary);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* Crónica Histórica */
+.section-title-wrap {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 8px;
+}
+
+.section-eyebrow {
+  font-family: var(--font-mono);
+  font-size: 8.5px;
+  font-weight: 700;
+  letter-spacing: 0.15em;
+  color: var(--text-muted);
+}
+
+.section-line {
+  flex: 1;
+  height: 1px;
+  background: var(--border-subtle);
+}
+
+.dossier-chronicle {
+  font-family: var(--font-sans);
+  font-size: 12px;
+  line-height: 1.6;
+  color: var(--text-secondary);
+}
+
+/* Sintonizador de Resonancia Sonora */
+.dossier-resonance-section {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  background: rgba(0, 0, 0, 0.25);
+  border: 1px solid var(--border-subtle);
+  border-radius: 10px;
+  padding: 12px;
+}
+
+.resonance-readout {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+}
+
+.freq-box {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.freq-tag {
+  font-family: var(--font-mono);
+  font-size: 8px;
+  letter-spacing: 0.12em;
+  color: var(--text-muted);
+}
+
+.freq-val {
+  font-family: var(--font-mono);
+  font-size: 13px;
+  font-weight: 700;
+  letter-spacing: 0.05em;
+  color: var(--accent-cyan);
+  text-shadow: 0 0 8px var(--accent-cyan-glow);
+}
+
+.spectrum-mini-wrap {
+  background: rgba(0, 0, 0, 0.4);
+  border: 1px solid var(--border-subtle);
+  border-radius: 4px;
+  padding: 2px 4px;
+}
+
+#dossier-spectrum {
+  display: block;
+}
+
+.resonance-trigger-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  width: 100%;
+  background: linear-gradient(135deg, rgba(0, 240, 255, 0.18), rgba(168, 85, 247, 0.18));
+  border: 1px solid var(--border-glow);
+  border-radius: 8px;
+  padding: 10px 14px;
+  font-family: var(--font-mono);
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  color: var(--accent-cyan);
+  cursor: pointer;
+  transition: var(--transition-fast);
+  box-shadow: 0 4px 16px rgba(0, 240, 255, 0.12);
+}
+
+.resonance-trigger-btn:hover {
+  background: linear-gradient(135deg, rgba(0, 240, 255, 0.3), rgba(168, 85, 247, 0.3));
+  box-shadow: 0 0 20px var(--accent-cyan-glow);
+  transform: translateY(-1px);
+}
+
+.resonance-trigger-btn:active {
+  transform: scale(0.98);
+}
+
+.res-pulse {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: var(--accent-cyan);
+  box-shadow: 0 0 8px var(--accent-cyan);
+  animation: pulseBeacon 1.2s infinite;
+}
+
+.dossier-footer {
+  margin-top: auto;
+  border-top: 1px solid var(--border-subtle);
+  padding-top: 10px;
+}
+
+.vault-sector {
+  font-family: var(--font-mono);
+  font-size: 7.5px;
+  letter-spacing: 0.15em;
+  color: var(--text-muted);
+}
+
+/* --------------------------------------------------------------------------
+   8. MÓDULO C: LÍNEA TEMPORAL & NAVEGADOR DE ERAS (Aethel Engine)
+   -------------------------------------------------------------------------- */
+.hud-bottombar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 20px;
+  background: var(--bg-glass);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border: 1px solid var(--border-subtle);
+  border-radius: 12px;
+  padding: 8px 20px;
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.08), 0 -8px 24px rgba(0, 0, 0, 0.45);
+}
+
+.timeline-navigator {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+
+.timeline-label {
+  display: flex;
+  flex-direction: column;
+}
+
+.label-eyebrow {
+  font-family: var(--font-mono);
+  font-size: 8px;
+  letter-spacing: 0.15em;
+  color: var(--text-muted);
+}
+
+.label-status {
+  font-family: var(--font-mono);
+  font-size: 9.5px;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  color: var(--accent-cyan);
+}
+
+.timeline-buttons {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.era-btn {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid var(--border-subtle);
+  border-radius: 7px;
+  padding: 6px 12px;
+  color: var(--text-secondary);
+  cursor: pointer;
+  transition: var(--transition-fast);
+}
+
+.era-index {
+  font-family: var(--font-display);
+  font-size: 10px;
+  font-weight: 700;
+  color: var(--text-muted);
+}
+
+.era-name {
+  font-family: var(--font-display);
+  font-size: 9.5px;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  color: var(--text-primary);
+}
+
+.era-range {
+  font-family: var(--font-mono);
+  font-size: 8px;
+  color: var(--text-muted);
+}
+
+.era-connector {
+  width: 14px;
+  height: 1px;
+  background: var(--border-subtle);
+}
+
+.era-btn:hover {
+  background: rgba(255, 255, 255, 0.08);
+  color: var(--text-primary);
+}
+
+.era-btn:active {
+  transform: scale(0.97);
+}
+
+.era-btn.active {
+  background: rgba(0, 240, 255, 0.14);
+  border-color: var(--border-glow);
+  box-shadow: 0 0 12px var(--accent-cyan-glow);
+}
+
+.era-btn.active .era-index,
+.era-btn.active .era-name {
+  color: var(--accent-cyan);
+}
+
+/* Ticker de Diagnósticos */
+.system-diagnostics-ticker {
+  flex: 1;
+  max-width: 480px;
+  overflow: hidden;
+  white-space: nowrap;
+  background: rgba(0, 0, 0, 0.25);
+  border: 1px solid var(--border-subtle);
+  border-radius: 6px;
+  padding: 4px 10px;
+}
+
+.ticker-content {
+  display: inline-block;
+  font-family: var(--font-mono);
+  font-size: 8.5px;
+  letter-spacing: 0.1em;
+  color: var(--text-muted);
+  animation: tickerSlide 22s linear infinite;
+}
+
+@keyframes tickerSlide {
+  0% { transform: translateX(100%); }
+  100% { transform: translateX(-100%); }
+}
+
+/* --------------------------------------------------------------------------
+   9. MODAL INICIAL DE BIENVENIDA & AUTORIZACIÓN DE AUDIO
+   -------------------------------------------------------------------------- */
+.welcome-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 100;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(3, 7, 18, 0.88);
+  backdrop-filter: blur(28px);
+  -webkit-backdrop-filter: blur(28px);
+  padding: 20px;
+  transition: opacity 0.4s ease, visibility 0.4s ease;
+}
+
+.welcome-overlay.hidden {
+  opacity: 0;
+  visibility: hidden;
+  pointer-events: none;
+}
+
+.welcome-card {
+  max-width: 460px;
+  width: 100%;
+  background: rgba(15, 23, 42, 0.85);
+  border: 1px solid var(--border-glow);
+  border-radius: 20px;
+  padding: 36px 30px;
+  text-align: center;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 16px;
+  box-shadow: 0 25px 60px rgba(0, 0, 0, 0.8), 0 0 35px var(--accent-cyan-glow);
+  animation: modalEnter 0.4s var(--ease-spring);
+}
+
+@keyframes modalEnter {
+  from { opacity: 0; transform: scale(0.95) translateY(12px); }
+  to { opacity: 1; transform: scale(1) translateY(0); }
+}
+
+.welcome-crest {
+  position: relative;
+  width: 44px;
+  height: 44px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.welcome-ring {
+  position: absolute;
+  inset: 0;
+  border: 2px solid var(--accent-cyan);
+  border-radius: 50%;
+  animation: rotateRing 8s linear infinite;
+  box-shadow: 0 0 16px var(--accent-cyan-glow);
+}
+
+.welcome-point {
+  width: 10px;
+  height: 10px;
+  background: #ffffff;
+  border-radius: 50%;
+  box-shadow: 0 0 12px var(--accent-cyan);
+}
+
+.welcome-title {
+  font-family: var(--font-display);
+  font-size: 24px;
+  font-weight: 900;
+  letter-spacing: 0.12em;
+  color: var(--text-primary);
+}
+
+.welcome-lead {
+  font-family: var(--font-mono);
+  font-size: 10.5px;
+  letter-spacing: 0.2em;
+  color: var(--accent-cyan);
+}
+
+.welcome-desc {
+  font-family: var(--font-sans);
+  font-size: 13px;
+  line-height: 1.6;
+  color: var(--text-secondary);
+}
+
+.welcome-keys-hint {
+  font-family: var(--font-mono);
+  font-size: 9px;
+  color: var(--text-muted);
+  background: rgba(0, 0, 0, 0.35);
+  border: 1px solid var(--border-subtle);
+  border-radius: 8px;
+  padding: 6px 12px;
+}
+
+.key-badge {
+  display: inline-block;
+  background: rgba(255, 255, 255, 0.1);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  border-radius: 3px;
+  padding: 1px 5px;
+  color: var(--text-primary);
+  font-weight: 700;
+  margin: 0 2px;
+}
+
+.welcome-enter-btn {
+  width: 100%;
+  background: linear-gradient(135deg, var(--accent-cyan), #3b82f6);
+  border: none;
+  border-radius: 10px;
+  padding: 14px 20px;
+  font-family: var(--font-display);
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  color: #030712;
+  cursor: pointer;
+  transition: var(--transition-fast);
+  box-shadow: 0 4px 20px rgba(0, 240, 255, 0.4);
+}
+
+.welcome-enter-btn:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 26px rgba(0, 240, 255, 0.6);
+}
+
+.welcome-enter-btn:active {
+  transform: scale(0.97);
+}
+
+/* --------------------------------------------------------------------------
+   10. RESPONSIVE & ADAPTACIÓN A DISPOSITIVOS MÓVILES
+   -------------------------------------------------------------------------- */
+@media (max-width: 1024px) {
+  .hud-telemetry-center {
+    display: none;
+  }
+
+  .dossier-panel {
+    width: 320px;
+  }
+
+  .system-diagnostics-ticker {
+    display: none;
+  }
+}
+
+@media (max-width: 768px) {
+  .nexus-interface {
+    padding: 10px 12px;
+  }
+
+  .hud-topbar {
+    padding: 8px 12px;
+    gap: 10px;
+  }
+
+  .brand-status, .hud-oscilloscope-container {
+    display: none;
+  }
+
+  .relic-selector-nav {
+    flex-direction: column;
+    width: 90%;
+    max-width: 320px;
+  }
+
+  .chamber-controls-dock {
+    flex-wrap: wrap;
+    justify-content: center;
+    padding: 8px;
+    gap: 8px;
+  }
+
+  .dossier-panel {
+    top: 70px;
+    bottom: 80px;
+    right: 12px;
+    left: 12px;
+    width: auto;
+  }
+
+  .hud-bottombar {
+    flex-direction: column;
+    padding: 8px 12px;
+    gap: 8px;
+  }
+
+  .timeline-navigator {
+    flex-direction: column;
+    gap: 6px;
+  }
+
+  .era-connector {
+    display: none;
+  }
+
+  .timeline-buttons {
+    flex-wrap: wrap;
+    justify-content: center;
+  }
+}

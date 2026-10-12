@@ -1,0 +1,325 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>AETHERIS 3050 — Deep-Time Human Vault & Cosmic Archive</title>
+  <meta name="description" content="Archivo holográfico terrestre del año 3050. Telemetría NexusOS, cámara de gravedad cero con reliquias 3D interactivas, fondo cósmico Aethel y sintetizador procedural Aura.">
+  
+  <!-- Tipografías de alta gama para Sci-Fi HUD y estética editorial -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@300;400;600;700&family=Orbitron:wght@500;700;900&family=Space+Grotesk:wght@400;600;700&display=swap" rel="stylesheet">
+  
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body class="vision-visible">
+
+  <!-- Lienzo de Fondo Cósmico (Aethel Engine) -->
+  <canvas id="cosmos-canvas" class="fullscreen-canvas"></canvas>
+
+  <!-- Lienzo de Reliquias 3D y Cámara de Gravedad Cero (Zero-G Engine) -->
+  <canvas id="chamber-canvas" class="fullscreen-canvas chamber-layer"></canvas>
+
+  <!-- Overlay de Red Cuántica y Scanlines para Modos Cyberpunk y Rayos-X -->
+  <div class="hud-scanlines-overlay" aria-hidden="true"></div>
+
+  <!-- Contenedor Maestro de Interfaz HUD NexusOS -->
+  <div class="nexus-interface">
+
+    <!-- ========================================================
+         MÓDULO A: HUD & TELEMETRÍA SUPERIOR (NexusOS)
+         ======================================================== -->
+    <header class="hud-topbar" role="banner">
+      <!-- Logotipo e Identidad de la Bóveda -->
+      <div class="hud-brand">
+        <div class="brand-crest">
+          <span class="crest-node"></span>
+          <span class="crest-ring"></span>
+        </div>
+        <div class="brand-text">
+          <h1 class="brand-title">AETHERIS <span class="accent-year">// 3050</span></h1>
+          <p class="brand-sub">DEEP-TIME HUMAN VAULT & ARCHIVE</p>
+        </div>
+        <div class="brand-status">
+          <span class="status-pulse" id="vault-status-dot"></span>
+          <span class="status-label" id="vault-status-text">ONLINE // CUÁNTICO</span>
+        </div>
+      </div>
+
+      <!-- Barra de Estado y Telemetría Central -->
+      <div class="hud-telemetry-center">
+        <div class="telemetry-block stardate-block">
+          <span class="telemetry-tag">CRONOLOGÍA ESTELAR</span>
+          <span class="telemetry-val" id="stardate-ticker">AÑO 3050.284 | STARDATE // 9821.4</span>
+        </div>
+        <div class="telemetry-divider"></div>
+        <div class="telemetry-block integrity-block">
+          <div class="integrity-head">
+            <span class="telemetry-tag">INTEGRIDAD CUÁNTICA</span>
+            <span class="telemetry-val highlight-cyan" id="quantum-integrity-val">99.8%</span>
+          </div>
+          <div class="integrity-bar-track">
+            <div class="integrity-bar-fill" id="quantum-integrity-bar" style="width: 99.8%;"></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Control de Visión, Audio y Mini-Osciloscopio -->
+      <div class="hud-controls-right">
+        <!-- Mini-Osciloscopio de Audio en Tiempo Real -->
+        <div class="hud-oscilloscope-container" title="Forma de onda en tiempo real del motor Aura">
+          <canvas id="hud-oscilloscope" width="110" height="32"></canvas>
+          <span class="osc-label">AURA // FFT</span>
+        </div>
+
+        <!-- Selector de Modos de Visión -->
+        <div class="vision-mode-selector" role="group" aria-label="Modo de Visión">
+          <button class="vision-btn active" data-vision="visible" id="btn-vis-visible" title="Luz Visible (Óptico)">
+            <span class="btn-dot"></span>ÓPTICO
+          </button>
+          <button class="vision-btn" data-vision="quantum" id="btn-vis-quantum" title="Escaneo Cuántico (Cyberpunk)">
+            <span class="btn-dot"></span>CUÁNTICO
+          </button>
+          <button class="vision-btn" data-vision="wireframe" id="btn-vis-wireframe" title="Rayos-X / Wireframe (CRT)">
+            <span class="btn-dot"></span>RAYOS-X
+          </button>
+        </div>
+
+        <!-- Conmutador Maestro de Audio -->
+        <button class="hud-audio-btn" id="audio-toggle-btn" aria-label="Alternar Audio">
+          <div class="audio-waves-icon">
+            <span class="wave-bar bar-1"></span>
+            <span class="wave-bar bar-2"></span>
+            <span class="wave-bar bar-3"></span>
+            <span class="wave-bar bar-4"></span>
+          </div>
+          <span class="audio-text" id="audio-btn-text">AUDIO: ON</span>
+        </button>
+      </div>
+    </header>
+
+    <!-- ========================================================
+         MÓDULO B: CÁMARA DE GRAVEDAD CERO (Zero-G Studio Controls)
+         ======================================================== -->
+    <main class="chamber-viewport">
+      <!-- Retícula Superior Central: Selector de Reliquias 3D -->
+      <nav class="relic-selector-nav" aria-label="Selector de Reliquias">
+        <button class="relic-tab active" data-relic="voyager" id="tab-voyager">
+          <span class="relic-num">01</span>
+          <span class="relic-tab-info">
+            <span class="relic-title">DISCO DE ORO</span>
+            <span class="relic-meta">VOYAGER 1 // 1977</span>
+          </span>
+        </button>
+        <button class="relic-tab" data-relic="quantum" id="tab-quantum">
+          <span class="relic-num">02</span>
+          <span class="relic-tab-info">
+            <span class="relic-title">NÚCLEO CUÁNTICO</span>
+            <span class="relic-meta">TERRA-1 // 2088</span>
+          </span>
+        </button>
+        <button class="relic-tab" data-relic="genesis" id="tab-genesis">
+          <span class="relic-num">03</span>
+          <span class="relic-tab-info">
+            <span class="relic-title">CRISTAL GÉNESIS</span>
+            <span class="relic-meta">BIO-SINTÉTICO // 2540</span>
+          </span>
+        </button>
+      </nav>
+
+      <!-- Indicador Táctil Central de Interacción -->
+      <div class="chamber-interaction-hint" id="chamber-hint">
+        <span class="hint-crosshair"></span>
+        <span class="hint-text">ARRASTRAR PARA ROTAR &bull; LANZAR CON INERCIA EN 0G</span>
+      </div>
+
+      <!-- Barra de Controles Físicos de la Cámara (Gravedad y Despiece) -->
+      <div class="chamber-controls-dock">
+        <!-- Selector de Gravedad -->
+        <div class="control-group gravity-group">
+          <span class="group-label">CAMPO GRAVITATORIO:</span>
+          <button class="dock-btn active" data-gravity="0g" id="btn-grav-0g" title="Gravedad Cero: Inercia pura y rebotes flotantes">0G LIBRE</button>
+          <button class="dock-btn" data-gravity="1g" id="btn-grav-1g" title="Gravedad Terrestre: Caída con rebote">1G TERRESTRE</button>
+          <button class="dock-btn" data-gravity="hyper" id="btn-grav-hyper" title="Hiper-Masa: Máxima densidad">HIPER-MASA</button>
+        </div>
+
+        <div class="dock-divider"></div>
+
+        <!-- Botón Vista Explosionada (Inspect) -->
+        <button class="dock-action-btn" id="btn-explode-toggle">
+          <span class="action-icon">⬡</span>
+          <span id="btn-explode-text">VISTA EXPLOSIONADA</span>
+        </button>
+
+        <!-- Botón de Recentrado de la Reliquia -->
+        <button class="dock-action-btn secondary" id="btn-recenter" title="Recentrar reliquia en el origen">
+          <span class="action-icon">⟲</span>
+          <span>CENTRAR</span>
+        </button>
+
+        <div class="dock-divider"></div>
+
+        <!-- Botón para Abrir/Cerrar Expediente -->
+        <button class="dock-action-btn dossier-trigger" id="btn-toggle-dossier">
+          <span class="action-icon">▤</span>
+          <span id="dossier-toggle-text">EXPEDIENTE</span>
+        </button>
+      </div>
+    </main>
+
+    <!-- ========================================================
+         MÓDULO D: FICHA HOLOGRÁFICA DE DESCLASIFICACIÓN (Dossier Panel)
+         ======================================================== -->
+    <aside class="dossier-panel open" id="dossier-panel" role="complementary" aria-label="Expediente de Desclasificación">
+      <!-- Botón retráctil pestaña -->
+      <button class="dossier-close-btn" id="dossier-close-tab" aria-label="Cerrar Expediente">
+        <span class="close-icon">&times;</span>
+      </button>
+
+      <div class="dossier-inner">
+        <!-- Cabecera del Expediente -->
+        <div class="dossier-header">
+          <div class="classification-strip">
+            <span class="classification-badge" id="dossier-classification">CONFIDENCIAL // NIVEL OMEGA</span>
+            <span class="archive-code" id="dossier-code">ARCH-3050-V1</span>
+          </div>
+          <h2 class="dossier-title" id="dossier-relic-title">EL DISCO DE ORO DE LAS VOYAGER</h2>
+          <div class="dossier-era-tag" id="dossier-era-tag">ERA ANALÓGICA &bull; AÑO 1977 D.C.</div>
+        </div>
+
+        <!-- Matriz de Especificaciones Técnicas -->
+        <div class="dossier-specs-matrix">
+          <div class="spec-cell">
+            <span class="spec-label">COMPOSICIÓN</span>
+            <span class="spec-value" id="spec-composition">Cobre bañado en oro / Uranio-238</span>
+          </div>
+          <div class="spec-cell">
+            <span class="spec-label">MASA TOTAL</span>
+            <span class="spec-value" id="spec-mass">1.024 kg (Inercia 0G)</span>
+          </div>
+          <div class="spec-cell">
+            <span class="spec-label">FIRMA CUÁNTICA</span>
+            <span class="spec-value highlight-cyan" id="spec-quantum">ψ = 0.0014 meV</span>
+          </div>
+          <div class="spec-cell">
+            <span class="spec-label">PRESERVACIÓN</span>
+            <span class="spec-value" id="spec-preservation">99.98% Integridad</span>
+          </div>
+        </div>
+
+        <!-- Crónica Histórica Fascinante -->
+        <div class="dossier-body">
+          <div class="section-title-wrap">
+            <span class="section-eyebrow">HISTORIAL DESCLASIFICADO</span>
+            <div class="section-line"></div>
+          </div>
+          <p class="dossier-chronicle" id="dossier-chronicle-text">
+            Lanzado a bordo de la sonda espacial Voyager 1 en agosto de 1977, este fonógrafo de 12 pulgadas porta los sonidos, imágenes y lenguajes del amanecer planetario de la Tierra. Recuperado de la Nube de Oort en el año 2914 por la Flota Arqueológica de Orión tras 937 años de silencio intersticial, sus surcos microscópicos preservan las últimas voces análogas de la humanidad primigenia.
+          </p>
+        </div>
+
+        <!-- Sintonizador de Resonancia Sonora con Aura Synth -->
+        <div class="dossier-resonance-section">
+          <div class="section-title-wrap">
+            <span class="section-eyebrow">MOTOR DE RESONANCIA ACÚSTICA</span>
+            <div class="section-line"></div>
+          </div>
+          
+          <div class="resonance-readout">
+            <div class="freq-box">
+              <span class="freq-tag">FRECUENCIA PRIMARIA</span>
+              <span class="freq-val" id="relic-freq-display">432.08 Hz</span>
+            </div>
+            <div class="spectrum-mini-wrap">
+              <canvas id="dossier-spectrum" width="120" height="34"></canvas>
+            </div>
+          </div>
+
+          <button class="resonance-trigger-btn" id="btn-trigger-resonance">
+            <span class="res-pulse"></span>
+            <span class="res-text">⚡ SINTONIZAR FRECUENCIA DE RESONANCIA</span>
+          </button>
+        </div>
+
+        <!-- Coordenadas de Bóveda y Pie de Ficha -->
+        <div class="dossier-footer">
+          <span class="vault-sector">CÁMARA DE CONTENCIÓN SUB-ESTELAR 04 &bull; COORDS: 42.119°N 71.025°W</span>
+        </div>
+      </div>
+    </aside>
+
+    <!-- ========================================================
+         MÓDULO C: LÍNEA TEMPORAL Y NAVEGADOR DE ERAS (Aethel Engine)
+         ======================================================== -->
+    <footer class="hud-bottombar" role="contentinfo">
+      <!-- Navegador de Eras Históricas -->
+      <div class="timeline-navigator">
+        <div class="timeline-label">
+          <span class="label-eyebrow">SALTOS TEMPORALES</span>
+          <span class="label-status" id="warp-status-text">HIPER-SALTO: PREPARADO</span>
+        </div>
+
+        <div class="timeline-buttons" role="group" aria-label="Eras Históricas">
+          <button class="era-btn active" data-era="analog" id="btn-era-analog">
+            <span class="era-index">01</span>
+            <span class="era-name">ERA ANALÓGICA</span>
+            <span class="era-range">1900 — 1999</span>
+          </button>
+          <div class="era-connector"></div>
+          <button class="era-btn" data-era="silicon" id="btn-era-silicon">
+            <span class="era-index">02</span>
+            <span class="era-name">ERA SILICIO</span>
+            <span class="era-range">2000 — 2099</span>
+          </button>
+          <div class="era-connector"></div>
+          <button class="era-btn" data-era="posthuman" id="btn-era-posthuman">
+            <span class="era-index">03</span>
+            <span class="era-name">ERA POST-HUMANA</span>
+            <span class="era-range">2100 — 3050</span>
+          </button>
+        </div>
+      </div>
+
+      <!-- Ticker de Telemetría Diagnóstica en Vivo -->
+      <div class="system-diagnostics-ticker">
+        <div class="ticker-content" id="diagnostics-ticker-stream">
+          TEMP: 2.725 K &bull; ENTROPÍA: 0.0014 J/K &bull; PRESIÓN VACÍO: 10⁻¹² TORR &bull; RADIACIÓN HAWKING: NOMINAL &bull; MATRIZ TENSORIAL: ESTABLE &bull; FLUJO GRAVITACIONAL: 0.00 G
+        </div>
+      </div>
+    </footer>
+
+  </div>
+
+  <!-- Modal Inicial de Bienvenida y Activación de Audio (Políticas del Navegador) -->
+  <div class="welcome-overlay" id="welcome-modal">
+    <div class="welcome-card">
+      <div class="welcome-crest">
+        <span class="welcome-ring"></span>
+        <span class="welcome-point"></span>
+      </div>
+      <h2 class="welcome-title">AETHERIS 3050</h2>
+      <p class="welcome-lead">EL ARCHIVO TERRESTRE DEL AÑO 3050</p>
+      <div class="welcome-desc">
+        Has accedido a la cámara holográfica de contención antigravedad. Esta experiencia utiliza síntesis de audio procedural en tiempo real y físicas vectoriales en gravedad cero a 60 FPS.
+      </div>
+      <div class="welcome-keys-hint">
+        <span class="key-badge">1</span><span class="key-badge">2</span><span class="key-badge">3</span> Reliquias &bull; 
+        <span class="key-badge">G</span> Gravedad &bull; 
+        <span class="key-badge">E</span> Despiece &bull; 
+        <span class="key-badge">V</span> Visión &bull; 
+        <span class="key-badge">M</span> Audio
+      </div>
+      <button class="welcome-enter-btn" id="btn-enter-vault">
+        INICIALIZAR PROTOCOLO Y DESCLASIFICAR
+      </button>
+    </div>
+  </div>
+
+  <!-- Scripts Modulares -->
+  <script src="audio.js"></script>
+  <script src="cosmos.js"></script>
+  <script src="relics.js"></script>
+  <script src="app.js"></script>
+</body>
+</html>
