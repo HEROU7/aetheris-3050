@@ -1,11 +1,14 @@
 # AETHERIS 3050 — Deep-Time Human Vault & Cosmic Archive
 > **El Archivo Terrestre del Año 3050: Cámara Holográfica de Preservación de la Humanidad**
 
-[![Standard](https://img.shields.io/badge/Standard-Awwwards%20%2F%20FWA-00f0ff?style=for-the-badge&logo=awwwards&logoColor=white)](https://github.com)
-[![Performance](https://img.shields.io/badge/Performance-60%20FPS%20Canvas-10b981?style=for-the-badge)](https://github.com)
-[![Audio](https://img.shields.io/badge/Audio-100%25%20Web%20Audio%20API-a855f7?style=for-the-badge)](https://github.com)
-[![Dependencies](https://img.shields.io/badge/Dependencies-Zero%20External%20Libs-ffb703?style=for-the-badge)](https://github.com)
-[![License](https://img.shields.io/badge/License-MIT-3b82f6?style=for-the-badge)](LICENSE)
+[![Standard](https://img.shields.io/badge/Standard-Awwwards%20%2F%20FWA-00f0ff?style=for-the-badge&logo=awwwards&logoColor=white)](https://github.com/HEROU7/aetheris-3050)
+[![Live Demo](https://img.shields.io/badge/Live%20Demo-GitHub%20Pages-3b82f6?style=for-the-badge&logo=githubpages&logoColor=white)](https://herou7.github.io/aetheris-3050/)
+[![Performance](https://img.shields.io/badge/Performance-60%20FPS%20Canvas-10b981?style=for-the-badge)](https://github.com/HEROU7/aetheris-3050)
+[![Audio](https://img.shields.io/badge/Audio-100%25%20Web%20Audio%20API-a855f7?style=for-the-badge)](https://github.com/HEROU7/aetheris-3050)
+[![Dependencies](https://img.shields.io/badge/Dependencies-Zero%20External%20Libs-ffb703?style=for-the-badge)](https://github.com/HEROU7/aetheris-3050)
+[![License](https://img.shields.io/badge/License-MIT-00f0ff?style=for-the-badge)](LICENSE)
+
+> 🚀 **Experiencia en Vivo Disponible:** [https://herou7.github.io/aetheris-3050/](https://herou7.github.io/aetheris-3050/)
 
 ---
 
